@@ -286,6 +286,77 @@ describe("jasmine.Fixtures using real AJAX call", function() {
   });
 });
 
+describe("event spies", function() {
+  var eventSpy;
+  var clickMeJqueryObject;
+  
+  beforeEach(function() {
+    setFixtures(sandbox().html('<a id="clickme">Click Me</a> <a id="otherlink">Other Link</a>'));
+    clickMeJqueryObject = $('#clickme');
+    eventSpy = spyOnEvent(clickMeJqueryObject, 'click');
+  });
+  
+  it('should return a spy', function() {
+    expect(eventSpy).toBeDefined;
+  });
+  
+  describe('when spy is first returned', function() {
+    it('should have a triggerCount of 0', function() {
+      expect(eventSpy.triggerCount).toEqual(0);
+    });
+    
+    it('should have an empty array for argsForTrigger', function() {
+      expect(eventSpy.argsForTrigger).toEqual([]);
+    });
+    
+    it('should have an empty array for eventForTrigger', function() {
+      expect(eventSpy.eventForTrigger).toEqual([]);
+    });
+    
+    it('should have an empty object for mostRecentTrigger', function() {
+      expect(eventSpy.mostRecentTrigger).toEqual({});
+    });
+    
+    it('should have an eventName matching the passed in event', function() {
+      expect(eventSpy.eventName).toEqual('click');
+    });
+    
+    it('should have a selector matching the passed in selector', function() {
+      expect(eventSpy.selector).toBe(clickMeJqueryObject);
+    });
+  });
+  
+  describe("when an event has been called once with arguments", function() {
+    var e;
+    
+    beforeEach(function() {
+      e = jQuery.Event("click");
+      clickMeJqueryObject.trigger(e, ['hat', 'cat']);
+    });
+    
+    it('should have a triggerCount of 1', function() {
+      expect(eventSpy.triggerCount).toEqual(1);
+    });
+
+    it('should have an event in eventForTrigger', function() {
+      expect(eventSpy.eventForTrigger[0]).toBe(e);
+    });
+    
+    it('should have an args array in argsForTrigger', function() {
+      expect(eventSpy.argsForTrigger).toEqual([['hat', 'cat']]);
+    });
+    
+    describe('mostRecentTrigger', function() {
+      it('should have an event in event', function() {
+        expect(eventSpy.mostRecentTrigger.event).toBe(e);
+      });
+      
+      it("should have it the arguments in args", function() {
+        expect(eventSpy.mostRecentTrigger.args).toEqual(['hat', 'cat']);
+      });
+    });
+  });
+});
 
 describe("jQuery matchers", function() {
   describe("when jQuery matcher hides original Jasmine matcher", function() {
@@ -623,17 +694,13 @@ describe("jQuery matchers", function() {
   });
 
   describe('toHaveBeenTriggeredOn', function() {
-    var eventSpy;
-    var clickMeJqueryObject;
-    
     beforeEach(function() {
       setFixtures(sandbox().html('<a id="clickme">Click Me</a> <a id="otherlink">Other Link</a>'));
-      clickMeJqueryObject = $('#clickme')
-      eventSpy = spyOnEvent(clickMeJqueryObject, 'click');
+      spyOnEvent($('#clickme'), 'click');
     });
 
     it('should pass if the event was triggered on the object', function() {
-      clickMeJqueryObject.click();
+      $('#clickme').click();
       expect('click').toHaveBeenTriggeredOn($('#clickme'));
     });
 
@@ -645,68 +712,9 @@ describe("jQuery matchers", function() {
       $('#otherlink').click();
       expect('click').not.toHaveBeenTriggeredOn($('#clickme'));
     });
-    
-    it('should return a spy', function() {
-      expect(eventSpy).toBeDefined;
-    });
-    
-    describe('when spy is first returned', function() {
-      it('should have a triggerCount of 0', function() {
-        expect(eventSpy.triggerCount).toEqual(0);
-      });
-      
-      it('should have an empty array for argsForTrigger', function() {
-        expect(eventSpy.argsForTrigger).toEqual([]);
-      });
-      
-      it('should have an empty array for eventForTrigger', function() {
-        expect(eventSpy.eventForTrigger).toEqual([]);
-      })
-      
-      it('should have an empty object for mostRecentTrigger', function() {
-        expect(eventSpy.mostRecentTrigger).toEqual({});
-      });
-      
-      it('should have an eventName matching the passed in event', function() {
-        expect(eventSpy.eventName).toEqual('click');
-      });
-      
-      it('should have a selector matching the passed in selector', function() {
-        expect(eventSpy.selector).toBe(clickMeJqueryObject);
-      });
-    });
-    
-    describe("when an event has been called once with arguments", function() {
-      var e;
-      
-      beforeEach(function() {
-        e = jQuery.Event("click");
-        clickMeJqueryObject.trigger(e, ['hat', 'cat']);
-      });
-      
-      it('should have a triggerCount of 1', function() {
-        expect(eventSpy.triggerCount).toEqual(1);
-      });
-
-      it('should have an event in eventForTrigger', function() {
-        expect(eventSpy.eventForTrigger[0]).toBe(e);
-      });
-      
-      it('should have an args array in argsForTrigger', function() {
-        expect(eventSpy.argsForTrigger).toEqual([['hat', 'cat']]);
-      });
-      
-      describe('mostRecentTrigger', function() {
-        it('should have an event in event', function() {
-          expect(eventSpy.mostRecentTrigger.event).toBe(e);
-        });
-        
-        it("should have it the arguments in args", function() {
-          expect(eventSpy.mostRecentTrigger.args).toEqual(['hat', 'cat']);
-        });
-      });
-    });
   });
+  
+  
   
   describe('toHandle', function() {
     beforeEach(function() {
