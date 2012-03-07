@@ -714,7 +714,30 @@ describe("jQuery matchers", function() {
     });
   });
   
-  
+  describe('toHaveBeenTriggeredOnAndWith', function() {
+    beforeEach(function() {
+      setFixtures(sandbox().html('<a id="clickme">Click Me</a> <a id="otherlink">Other Link</a>'));
+      spyOnEvent($('#clickme'), 'click');
+    });
+    
+    it('should pass if the event was trigged on the object with the correct arguments', function() {
+      $('#clickme').trigger('click', ['chicken', 'cheese']);
+      expect('click').toHaveBeenTriggeredOnAndWith($('#clickme'), ['chicken', 'cheese']);
+    });
+    
+    it('should pass negated if the event was never triggered with those arguments', function() {
+      expect('click').not.toHaveBeenTriggeredOnAndWith($('#clickme'), ['chicken', 'cheese']);
+    });
+    
+    it('should pass negated if the event was called but with different arguments', function() {
+      $('#clickme').trigger('click', ['chicken', 'bacon']);
+      expect('click').not.toHaveBeenTriggeredOnAndWith($('#clickme'), ['chicken', 'cheese']);
+    });
+    
+    it('should pass negated if the event was never called', function() {
+      expect('focus').not.toHaveBeenTriggeredOnAndWith($('#clickme'), ['chicken', 'cheese']);
+    });
+  });
   
   describe('toHandle', function() {
     beforeEach(function() {
@@ -755,7 +778,6 @@ describe("jQuery matchers", function() {
     it('should pass if the event is not bound at all', function() {
       expect($('#clickme')).not.toHandle("click");
     });
-
   });
 });
 
